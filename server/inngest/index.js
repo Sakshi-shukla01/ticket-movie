@@ -1,56 +1,44 @@
-import { Inngest } from "inngest";
-import User from "../models/User.js";
-import connectDB from "../configs/db.js";
+import { Inngest } from 'inngest';
+import connectDB from '../configs/db.js';    // ← correct relative path
+import User      from '../models/User.js';   // ← correct relative path
 
+export const inngest = new Inngest({ id: 'QuickShow App' });
 
-export const inngest = new Inngest({ id: "QuickShow App" });
-
-// Create user
 const syncUserCreation = inngest.createFunction(
   { id: 'sync-user-from-clerk' },
   { event: 'clerk/user.created' },
   async ({ event }) => {
-    await connectDB(); // ✅ must call DB connection
+    await connectDB();
     const { id, first_name, last_name, email_addresses, image_url } = event.data;
-
-    const userData = {
-      _id: id,
+    return await User.create({
+      _id:   id,
       email: email_addresses[0].email_address,
-      name: `${first_name} ${last_name}`,
+      name:  `${first_name} ${last_name}`,
       image: image_url
-    };
-
-    return await User.create(userData);
+    });
   }
 );
 
-// Delete user
 const syncUserDeletion = inngest.createFunction(
   { id: 'delete-user-from-clerk' },
   { event: 'clerk/user.deleted' },
   async ({ event }) => {
-    await connectDB(); // ✅ connect
-    const { id } = event.data;
-    return await User.findByIdAndDelete(id);
+    await connectDB();
+    return await User.findByIdAndDelete(event.data.id);
   }
 );
 
-// Update user
 const syncUserUpdation = inngest.createFunction(
   { id: 'update-user-from-clerk' },
   { event: 'clerk/user.updated' },
   async ({ event }) => {
-    await connectDB(); // ✅ connect
+    await connectDB();
     const { id, first_name, last_name, email_addresses, image_url } = event.data;
-
-    const userData = {
-      _id: id,
+    return await User.findByIdAndUpdate(id, {
       email: email_addresses[0].email_address,
-      name: `${first_name} ${last_name}`,
+      name:  `${first_name} ${last_name}`,
       image: image_url
-    };
-
-    return await User.findByIdAndUpdate(id, userData);
+    });
   }
 );
 
