@@ -2,26 +2,26 @@ import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
   _id: {
-    type: String, // usually Clerk user ID or similar external UID
+    type: String,
     required: true
   },
   name: {
     type: String,
     required: true,
-    trim: true // optional: trims whitespace
+    trim: true
   },
   email: {
     type: String,
     required: true,
-    lowercase: true, // ensures consistency
-    unique: true // optional: avoids duplicates
+    lowercase: true,
+    unique: true
   },
   image: {
     type: String,
     required: true
   }
-}, { timestamps: true }); // optional: adds createdAt & updatedAt
+}, { timestamps: true });
 
-const User = mongoose.model('User', userSchema);
+const User = mongoose.models.User || mongoose.model('User', userSchema); // ✅ prevents model overwrite error
 
 export default User;
