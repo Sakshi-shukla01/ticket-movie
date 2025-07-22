@@ -1,14 +1,10 @@
-// api/inngest.js
-import { serve } from "inngest/express"; // ✅ Not "next"
-import express from "express";
-import { inngest, functions } from "../inngest/index.js";
-
-const app = express();
+// api/ingest.js
+import { serve } from 'inngest/express';
+import { inngest, functions } from '../../inngest/index.js'; // adjust path
 
 const handler = serve({
   client: inngest,
   functions,
 });
 
-// 👇 Vercel requires this default export
-export default handler;
+export default handler; // <-- required for Vercel

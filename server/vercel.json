@@ -1,10 +1,15 @@
-
 {
   "version": 2,
   "builds": [
-    { "src": "server.js", "use": "@vercel/node" }
+    {
+      "src": "api/ingest.js",
+      "use": "@vercel/node"
+    }
   ],
   "routes": [
-    { "src": "/api/inngest", "dest": "/server.js" }
+    {
+      "src": "/api/ingest",
+      "dest": "api/ingest.js"
+    }
   ]
 }
