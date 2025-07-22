@@ -1,6 +1,7 @@
 import { Inngest } from 'inngest';
 import connectDB from '../configs/db.js';
-import User from '../models/User.js';
+import User from '../models/user.js'; // ✅ Matches your lowercase file name
+
 
 export const inngest = new Inngest({ id: 'QuickShow App' });
 
