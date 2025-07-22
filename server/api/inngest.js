@@ -1,10 +1,8 @@
 // api/inngest.js
 import { serve } from "inngest/next";
-import { inngest, functions } from "../inngest/index.js"; // adjust path if needed
+import { inngest, functions } from "../inngest/index.js"; // ✅ adjust if needed
 
-export const handler = serve({
+export default serve({
   client: inngest,
   functions: functions,
 });
-
-export default handler;
