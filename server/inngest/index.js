@@ -1,11 +1,10 @@
 import { Inngest } from 'inngest';
-import connectDB from '../configs/db.js';    // ← correct relative path
-// must exactly match the filename "User.js" (uppercase U)
+import connectDB from '../configs/db.js';
 import User from '../models/User.js';
-   // ← correct relative path
 
 export const inngest = new Inngest({ id: 'QuickShow App' });
 
+// Sync user creation
 const syncUserCreation = inngest.createFunction(
   { id: 'sync-user-from-clerk' },
   { event: 'clerk/user.created' },
@@ -13,14 +12,30 @@ const syncUserCreation = inngest.createFunction(
     await connectDB();
     const { id, first_name, last_name, email_addresses, image_url } = event.data;
     return await User.create({
-      _id:   id,
+      _id: id,
       email: email_addresses[0].email_address,
-      name:  `${first_name} ${last_name}`,
+      name: `${first_name} ${last_name}`,
       image: image_url
     });
   }
 );
 
+// Sync user update
+const syncUserUpdation = inngest.createFunction(
+  { id: 'update-user-from-clerk' },
+  { event: 'clerk/user.updated' },
+  async ({ event }) => {
+    await connectDB();
+    const { id, first_name, last_name, email_addresses, image_url } = event.data;
+    return await User.findByIdAndUpdate(id, {
+      email: email_addresses[0].email_address,
+      name: `${first_name} ${last_name}`,
+      image: image_url
+    });
+  }
+);
+
+// Sync user deletion
 const syncUserDeletion = inngest.createFunction(
   { id: 'delete-user-from-clerk' },
   { event: 'clerk/user.deleted' },
@@ -30,22 +45,8 @@ const syncUserDeletion = inngest.createFunction(
   }
 );
 
-const syncUserUpdation = inngest.createFunction(
-  { id: 'update-user-from-clerk' },
-  { event: 'clerk/user.updated' },
-  async ({ event }) => {
-    await connectDB();
-    const { id, first_name, last_name, email_addresses, image_url } = event.data;
-    return await User.findByIdAndUpdate(id, {
-      email: email_addresses[0].email_address,
-      name:  `${first_name} ${last_name}`,
-      image: image_url
-    });
-  }
-);
-
 export const functions = [
   syncUserCreation,
-  syncUserDeletion,
-  syncUserUpdation
+  syncUserUpdation,
+  syncUserDeletion
 ];

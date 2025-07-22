@@ -9,25 +9,24 @@ import { inngest, functions } from './inngest/index.js';
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Connect to DB
-await connectDB();
+try {
+  await connectDB();
+  console.log('✅ MongoDB connected');
+} catch (err) {
+  console.error('❌ Failed to connect to DB:', err.message);
+  process.exit(1);
+}
 
-// Middlewares
 app.use(express.json());
 app.use(cors());
 app.use(clerkMiddleware());
 
-// Health check
-app.get('/', (_req, res) => res.send('Server is Live!'));
+// Health check route
+app.get('/', (req, res) => res.send('✅ Server is Live!'));
 
-// ——— Fix is here ———
-app.use(
-  '/api/ingest',
-  serve({
-    client:    inngest,
-    functions,
-  })
-);
+// Inngest handler (v3)
+app.use('/api/ingest', serve({ client: inngest, functions }));
 
-// Start server
-app.listen(port, () => console.log(`Listening on http://localhost:${port}`));
+app.listen(port, () => {
+  console.log(`Listening on http://localhost:${port}`);
+});
