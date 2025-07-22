@@ -1,6 +1,8 @@
 import { Inngest } from 'inngest';
 import connectDB from '../configs/db.js';    // ← correct relative path
-import User      from '../models/User.js';   // ← correct relative path
+// must exactly match the filename "User.js" (uppercase U)
+import User from '../models/User.js';
+   // ← correct relative path
 
 export const inngest = new Inngest({ id: 'QuickShow App' });
 
