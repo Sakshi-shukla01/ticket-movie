@@ -2,14 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "api/ingest.js",
+      "src": "api/inngest.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
-      "src": "/api/ingest",
-      "dest": "api/ingest.js"
+      "src": "/api/inngest",
+      "dest": "api/inngest.js"
     }
   ]
 }
