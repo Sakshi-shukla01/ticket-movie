@@ -2,14 +2,19 @@
   "version": 2,
   "builds": [
     {
-      "src": "api/inngest.js",
-      "use": "@vercel/node"
+      "src": "server.js",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": [
+          "dist/**"
+        ]
+      }
     }
   ],
   "routes": [
     {
-      "src": "/api/inngest",
-      "dest": "api/inngest.js"
+      "src": "/(.*)",
+      "dest": "server.js"
     }
   ]
 }
