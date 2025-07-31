@@ -1,15 +1,16 @@
-// models/User.js
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
+  _id: String, // Clerk user ID as _id
   name: String,
   email: String,
+  image: String,
   role: {
     type: String,
     enum: ["user", "admin"],
     default: "user",
   },
-  // other fields
 });
 
-export default mongoose.model("User", userSchema);
+const User = mongoose.model("User", userSchema);
+export default User;
