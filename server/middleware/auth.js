@@ -2,7 +2,7 @@ import { clerkClient } from "@clerk/express";
 
 export const protectAdmin = async (req, res, next) => {
   try {
-    const { userId } = await req.auth(); // ✅ await is necessary here
+    const { userId } = req.auth(); // ✅ Correct usage: no `await`
 
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });

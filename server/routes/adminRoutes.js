@@ -9,9 +9,10 @@ import {
 
 const adminRouter = express.Router();
 
+// ✅ Protect all admin routes with protectAdmin
 adminRouter.get("/is-admin", protectAdmin, isAdmin);
 adminRouter.get("/dashboard", protectAdmin, getDashboardData);
 adminRouter.get("/all-shows", protectAdmin, getAllShows);
 adminRouter.get("/all-bookings", protectAdmin, getAllBookings);
 
-export default adminRouter; // ✅ This was missing
+export default adminRouter;
