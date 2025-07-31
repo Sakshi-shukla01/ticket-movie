@@ -18,10 +18,15 @@ const port = process.env.PORT || 3000;
 
 // ✅ Connect to MongoDB
 await connectDB();
-//stripe webhooks route
-app.use('/api/stripe',express.raw({type:'application/json'}),stripeWebhooks)
 
-// ✅ CORS setup
+// ✅ Stripe webhook route (must come BEFORE express.json)
+app.post(
+  '/api/stripe/webhook',
+  express.raw({ type: 'application/json' }), // Only raw body here
+  stripeWebhooks
+);
+
+// ✅ Other middlewares after webhook
 app.use(
   cors({
     origin: process.env.FRONTEND_URL || 'http://localhost:5173',
@@ -29,17 +34,14 @@ app.use(
   })
 );
 
-// ✅ JSON parsing
-app.use(express.json());
-
-// ✅ Clerk auth middleware
+app.use(express.json()); // Now it's safe
 app.use(clerkMiddleware());
 
 // ✅ Register routes
-app.use('/api/show', showRouter);        // GET movie shows
-app.use('/api/booking', bookingRouter);  // POST/GET bookings
-app.use('/api/admin', adminRouter);      // POST show addition (your case)
-app.use('/api/user', userRouter);        // User-related routes
+app.use('/api/show', showRouter);
+app.use('/api/booking', bookingRouter);
+app.use('/api/admin', adminRouter);
+app.use('/api/user', userRouter);
 app.use('/api/inngest', serve({ client: inngest, functions }));
 
 // ✅ Health check
