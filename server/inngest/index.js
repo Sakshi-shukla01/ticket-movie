@@ -1,6 +1,6 @@
 import { Inngest } from "inngest";
 //import connectDB from "../configs/db.js";
-import User from "../models/user.js";
+import User from "../models/User.js";
 
 // Create a client to send and receive events
 export const inngest = new Inngest({ id: "movie-ticket-booking" });

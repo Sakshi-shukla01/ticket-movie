@@ -1,24 +1,66 @@
 import React, { useEffect, useState } from 'react';
-import { dummyBookingData } from '../assets/assets';
 import BlurCircle from '../components/BlurCircle';
-import Loading from '../components/Loading'; // Ensure you have this or replace with <p>Loading...</p>
+import Loading from '../components/Loading';
 import { dateFormat } from '../lib/dateFormat';
 import timeFormat from '../lib/timeFormat';
+import { useAppContext } from '../context/AppContext';
 
 const MyBookings = () => {
   const currency = import.meta.env.VITE_CURRENCY || '₹';
   const [bookings, setBookings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const {
+    axios,
+    getToken,
+    user,
+    image_base_url,
+  } = useAppContext();
+
+  // ✅ Get bookings from correct endpoint
   const getMyBookings = async () => {
-    // Simulate fetching data (you can later connect to backend)
-    setBookings(dummyBookingData);
+    try {
+      const token = await getToken();
+      const { data } = await axios.get('/api/booking/my', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (data.success) {
+        setBookings(data.bookings);
+      }
+    } catch (error) {
+      console.error('❌ Error fetching bookings:', error.message);
+    }
     setIsLoading(false);
   };
 
+  // ✅ Fix: use POST /api/booking/pay/:bookingId
+  const handlePayment = async (bookingId) => {
+    try {
+      const token = await getToken();
+      const { data } = await axios.post(`/api/booking/pay/${bookingId}`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (data.success) {
+        alert('✅ Payment successful!');
+        getMyBookings(); // Refresh list
+      } else {
+        alert(data.message || '❌ Payment failed');
+      }
+    } catch (error) {
+      console.error('❌ Error while paying:', error.message);
+      alert('Something went wrong.');
+    }
+  };
+
   useEffect(() => {
-    getMyBookings();
-  }, []);
+    if (user) {
+      getMyBookings();
+    } else {
+      setIsLoading(false);
+    }
+  }, [user]);
 
   return isLoading ? (
     <Loading />
@@ -29,40 +71,49 @@ const MyBookings = () => {
 
       <h1 className='text-lg font-semibold mb-4 text-white'>My Bookings</h1>
 
-      {bookings.map((item, index) => (
-  <div
-    key={index}
-    className="flex flex-col md:flex-row justify-between bg-#d63854-900 border border-#d63854-600 rounded-lg mt-6 p-4 max-w-3xl shadow-md"
-  >
-          <div className='flex flex-col md:flex-row gap-4'>
-            <img
-              src={item.show.movie.poster_path}
-              alt={item.show.movie.title}
-              className='md:max-w-45 w-full md:w-40 aspect-video object-cover object-bottom rounded'
-            />
+      {bookings.length === 0 ? (
+        <p className='text-gray-400'>You haven’t booked any movies yet.</p>
+      ) : (
+        bookings.map((item, index) => (
+          <div
+            key={index}
+            className="flex flex-col md:flex-row justify-between border border-gray-700 bg-black/40 rounded-xl mt-6 p-4 max-w-3xl shadow-lg"
+          >
+            {/* Movie Poster + Info */}
+            <div className='flex flex-col md:flex-row gap-4'>
+              <img
+                src={image_base_url + item.show.movie.poster_path}
+                alt={item.show.movie.title}
+                className='md:w-40 w-full aspect-video object-cover object-bottom rounded-md'
+              />
 
-            <div className='flex flex-col justify-between'>
-              <p className='text-lg font-semibold text-white'>{item.show.movie.title}</p>
-              <p className='text-gray-400 text-sm'>{timeFormat(item.show.movie.runtime)} mins</p>
-              <p className='text-gray-400 text-sm'>{dateFormat(item.show.showDateTime)}</p>
-       
+              <div className='flex flex-col justify-between text-white'>
+                <p className='text-xl font-semibold'>{item.show.movie.title}</p>
+                <p className='text-sm text-gray-400'>{timeFormat(item.show.movie.runtime)} mins</p>
+                <p className='text-sm text-gray-400'>{dateFormat(item.show.showDateTime)}</p>
+              </div>
+            </div>
+
+            {/* Booking Info */}
+            <div className='flex flex-col justify-between items-start md:items-end mt-4 md:mt-0 text-white'>
+              <div>
+                <p className='text-xl font-bold mb-2'>{currency}{item.amount}</p>
+                {!item.isPaid && (
+                  <button
+                    onClick={() => handlePayment(item._id)}
+                    className='bg-red-600 hover:bg-red-700 text-sm px-4 py-2 rounded-full mb-2 font-medium'>
+                    Pay Now
+                  </button>
+                )}
+              </div>
+              <div className='text-sm text-gray-300'>
+                <p><span className='text-gray-400'>Total Tickets:</span> {item.bookedSeats.length}</p>
+                <p><span className='text-gray-400'>Seat Numbers:</span> {item.bookedSeats.join(', ')}</p>
+              </div>
             </div>
           </div>
-          <div className='flex flex-col md:items-end md;text-right justify-between p-4'>
-        <div>
-          <p className='text-2xl font-semibold mb-3'>{currency}{item.amount}</p>
-          {!item.isPaid && <button className='bg-primary px-4 py-1.5 mb-3
-          text-sm rounded-full font-medium cursor-pointer'>Pay Now</button>}
-          </div>
-          <div className='text-sm'>
-            
-            <p className='text-gray-400'><span>Total Tickets:</span>{item.bookedSeats.length}</p>
-            <p className='text-gray-400'><span>Seat Number:</span>{item.bookedSeats.join(", ")}</p>
-
-        </div>
-        </div>
-        </div>
-      ))}
+        ))
+      )}
     </div>
   );
 };

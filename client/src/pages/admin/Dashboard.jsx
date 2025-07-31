@@ -7,15 +7,15 @@ import {
   StarIcon,
 } from 'lucide-react';
 import { dateFormat } from '../../lib/dateFormat.js';
-
-
-import { dummyDashboardData } from '../../assets/assets';
 import Title from '../../components/admin/Title';
 import BlurCircle from '../../components/BlurCircle';
 import Loading from '../../components/Loading';
+import { useAppContext } from '../../context/AppContext.jsx';
+import { toast } from 'react-hot-toast'; // ✅ You missed this import
 
 const Dashboard = () => {
   const currency = import.meta.env.VITE_CURRENCY;
+  const { axios, getToken, user, image_base_url } = useAppContext();
 
   const [dashboardData, setDashboardData] = useState({
     totalBookings: 0,
@@ -27,20 +27,38 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
 
   const dashboardCards = [
-    { title: 'Total Bookings', value: dashboardData.totalBookings || '0', icon: ChartLineIcon },
-    { title: 'Total Revenue', value: `${currency}${dashboardData.totalRevenue || '0'}`, icon: CircleDollarSignIcon },
-    { title: 'Active Shows', value: dashboardData.activeShows.length || '0', icon: PlayCircleIcon },
-    { title: 'Total Users', value: dashboardData.totalUser || '0', icon: UsersIcon },
+    { id: 'bookings', title: 'Total Bookings', value: dashboardData.totalBookings || '0', icon: ChartLineIcon },
+    { id: 'revenue', title: 'Total Revenue', value: `${currency}${dashboardData.totalRevenue || '0'}`, icon: CircleDollarSignIcon },
+    { id: 'shows', title: 'Active Shows', value: dashboardData.activeShows.length || '0', icon: PlayCircleIcon },
+    { id: 'users', title: 'Total Users', value: dashboardData.totalUser || '0', icon: UsersIcon },
   ];
 
   const fetchDashboardData = async () => {
-    setDashboardData(dummyDashboardData);
-    setLoading(false);
-  };
+  try {
+    const { data } = await axios.get("/api/admin/dashboard", {
+      headers: {
+        Authorization: `Bearer ${await getToken()}`
+      }
+    });
+
+    if (data.success) {
+      setDashboardData(data.dashboardData); // ✅ typo fixed here
+      setLoading(false);
+    } else {
+      toast.error(data.message);
+    }
+
+  } catch (error) {
+    toast.error("error fetching dashboard");
+    console.error("Dashboard Fetch Error:", error);
+  }
+};
 
   useEffect(() => {
-    fetchDashboardData();
-  }, []);
+    if (user) {
+      fetchDashboardData();
+    }
+  }, [user]);
 
   return !loading ? (
     <>
@@ -50,9 +68,9 @@ const Dashboard = () => {
         <BlurCircle top="-100px" left="0" />
 
         <div className="flex flex-wrap gap-4 w-full">
-          {dashboardCards.map((card, index) => (
+          {dashboardCards.map((card) => (
             <div
-              key={index}
+              key={card.id}
               className="flex items-center justify-between px-4 py-3 bg-primary/10 border border-primary/20 rounded-md max-w-50 w-full"
             >
               <div>
@@ -71,26 +89,27 @@ const Dashboard = () => {
 
         {dashboardData.activeShows.map((show) => (
           <div
-            key={show.id}
+            key={show.id || show.movie?.id || show.movie?.title}
             className="w-55 rounded-lg overflow-hidden h-full pb-3 bg-primary/10 border border-primary/20 hover:-translate-y-1 transition duration-300"
           >
             <img
-              src={show.movie.poster_path}
-              alt=""
+              src={image_base_url + show.movie?.poster_path}
+              alt={show.movie?.title}
               className="h-60 w-full object-cover"
             />
-            <p className="font-medium p-2 truncate">{show.movie.title}</p>
+            <p className="font-medium p-2 truncate">{show.movie?.title}</p>
             <div className="flex items-center justify-between px-2">
               <p className="text-lg font-medium">
                 {currency} {show.showPrice}
               </p>
               <p className="flex items-center gap-1 text-sm text-gray-400 mt-1 pr-1">
                 <StarIcon className="w-4 h-4 text-primary fill-primary" />
-                {show.movie.vote_average.toFixed(1)}
+                {show.movie?.vote_average?.toFixed(1)}
               </p>
             </div>
-            <p className="px-2 pt-2 text-sm text-gray-500">{dateFormat
-            (show.showDateTime)}</p>
+            <p className="px-2 pt-2 text-sm text-gray-500">
+              {dateFormat(show.showDateTime)}
+            </p>
           </div>
         ))}
       </div>
@@ -98,6 +117,6 @@ const Dashboard = () => {
   ) : (
     <Loading />
   );
-};
+}; // ✅ This was missing!
 
 export default Dashboard;

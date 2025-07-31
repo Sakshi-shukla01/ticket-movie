@@ -1,3 +1,4 @@
+// ✅ Navbar.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -9,10 +10,9 @@ import {
   LogOut,
   UserPlus,
 } from 'lucide-react';
-import { assets } from '../assets/assets';
-
 import logo from '../assets/logo.svg';
 import { useClerk, useUser } from '@clerk/clerk-react';
+import { useAppContext } from '../context/AppContext';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -20,6 +20,7 @@ const Navbar = () => {
   const { user } = useUser();
   const { openSignIn, signOut, openUserProfile } = useClerk();
   const navigate = useNavigate();
+  const { favoriteMovies } = useAppContext();
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -32,11 +33,29 @@ const Navbar = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const baseLinks = [
+    { path: '/', label: 'Home' },
+    { path: '/movies', label: 'Movies' },
+    { path: '/theaters', label: 'Theaters' },
+    { path: '/releases', label: 'Releases' },
+  ];
+
+  if (favoriteMovies.length > 0) {
+    baseLinks.push({
+      path: '/favorite',
+      label: (
+        <span className="relative">
+          Favorites
+          <span className="absolute -top-2 -right-3 text-xs bg-red-500 text-white px-1.5 py-0.5 rounded-full">
+            {favoriteMovies.length}
+          </span>
+        </span>
+      ),
+    });
+  }
+
   return (
-    
     <div className="fixed top-0 left-0 w-full z-50 px-6 md:px-16 lg:px-36 py-5 bg-black text-white flex items-center justify-between">
-      
-      {/* Left: Logo */}
       <Link to="/" className="flex items-center">
         <img src={logo} alt="QuickShow Logo" className="w-8 h-8" />
         <span className="ml-2 text-xl font-semibold text-white">
@@ -44,30 +63,31 @@ const Navbar = () => {
         </span>
       </Link>
 
-      {/* Center: Menu Links */}
-      <div className={`items-center gap-6 text-sm font-medium transition-all duration-300 ${
-        isOpen
-          ? 'flex flex-col absolute top-0 left-0 w-full h-screen bg-black pt-20 pl-10 z-40 md:relative md:flex-row md:h-auto md:w-auto md:bg-transparent'
-          : 'hidden md:flex'
-      }`}>
-        <XIcon className="absolute top-6 right-6 w-6 h-6 cursor-pointer md:hidden" onClick={() => setIsOpen(false)} />
-        {[
-          { path: '/', label: 'Home' },
-          { path: '/movies', label: 'Movies' },
-          { path: '/', label: 'Theaters' },
-          { path: '/', label: 'Releases' },
-          { path: '/favorite', label: 'Favorites' },
-        ].map(({ path, label }) => (
-          <Link key={label} to={path} onClick={() => {
-            window.scrollTo(0, 0);
-            setIsOpen(false);
-          }}>
+      <div
+        className={`items-center gap-6 text-sm font-medium transition-all duration-300 ${
+          isOpen
+            ? 'flex flex-col absolute top-0 left-0 w-full h-screen bg-black pt-20 pl-10 z-40 md:relative md:flex-row md:h-auto md:w-auto md:bg-transparent'
+            : 'hidden md:flex'
+        }`}
+      >
+        <XIcon
+          className="absolute top-6 right-6 w-6 h-6 cursor-pointer md:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+        {baseLinks.map(({ path, label }, index) => (
+          <Link
+            key={`${typeof label === 'string' ? label : 'link'}-${index}`}
+            to={path}
+            onClick={() => {
+              window.scrollTo(0, 0);
+              setIsOpen(false);
+            }}
+          >
             {label}
           </Link>
         ))}
       </div>
 
-      {/* Right: Search, Login, Avatar Dropdown */}
       <div className="flex items-center gap-4 relative" ref={dropdownRef}>
         <SearchIcon className="w-5 h-5 cursor-pointer max-md:hidden" />
 
@@ -80,7 +100,6 @@ const Navbar = () => {
           </button>
         ) : (
           <>
-            {/* Avatar */}
             <img
               src={user.imageUrl}
               alt="User Avatar"
@@ -88,21 +107,17 @@ const Navbar = () => {
               onClick={() => setDropdownOpen(!dropdownOpen)}
             />
 
-            {/* Dropdown */}
             {dropdownOpen && (
               <div className="absolute right-0 mt-2 w-64 bg-white text-black rounded-lg shadow-lg z-50 text-sm overflow-hidden">
-                
-                {/* User Info */}
                 <div className="px-4 py-3 border-b border-gray-200 bg-white">
                   <div className="text-sm font-semibold truncate max-w-[220px]">
-                    {user.fullName || "Great Stack"}
+                    {user.fullName || 'Great Stack'}
                   </div>
                   <div className="text-xs text-gray-600 truncate max-w-[220px]">
                     {user.primaryEmailAddress?.emailAddress}
                   </div>
                 </div>
 
-                {/* Manage Account */}
                 <div
                   onClick={() => {
                     openUserProfile();
@@ -114,7 +129,6 @@ const Navbar = () => {
                   Manage account
                 </div>
 
-                {/* My Bookings */}
                 <div
                   onClick={() => {
                     navigate('/my-bookings');
@@ -126,7 +140,6 @@ const Navbar = () => {
                   My Bookings
                 </div>
 
-                {/* Add Account */}
                 <div
                   onClick={() => {
                     openSignIn({ strategy: 'switch' });
@@ -138,7 +151,6 @@ const Navbar = () => {
                   Add Account
                 </div>
 
-                {/* Sign Out */}
                 <div
                   onClick={() => {
                     signOut();
@@ -154,8 +166,10 @@ const Navbar = () => {
           </>
         )}
 
-        {/* Mobile Hamburger */}
-        <MenuIcon className="md:hidden w-8 h-8 cursor-pointer" onClick={() => setIsOpen(true)} />
+        <MenuIcon
+          className="md:hidden w-8 h-8 cursor-pointer"
+          onClick={() => setIsOpen(true)}
+        />
       </div>
     </div>
   );
