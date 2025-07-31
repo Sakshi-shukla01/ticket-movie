@@ -1,5 +1,5 @@
 import { Inngest } from "inngest";
-import User from "../models/User.js";
+import User from '../models/User.js'; // ✅ Must match exact file casing
 
 
 export const inngest = new Inngest({ id: "movie-ticket-booking" });
