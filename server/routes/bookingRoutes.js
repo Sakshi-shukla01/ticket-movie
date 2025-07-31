@@ -1,4 +1,3 @@
-// bookingRoutes.js
 import express from 'express';
 import {
   createBooking,
@@ -9,9 +8,9 @@ import {
 
 const bookingRouter = express.Router();
 
-bookingRouter.post('/create', createBooking); // POST /api/booking/create
-bookingRouter.get('/seats/:showId', getOccupiedSeats); // GET /api/booking/seats/:showId
-bookingRouter.get('/my', getMyBookings); // GET /api/booking/my
-bookingRouter.post('/pay/:bookingId', processPayment); // Optional payment route
+bookingRouter.post('/create', createBooking);
+bookingRouter.get('/seats/:showId', getOccupiedSeats);
+bookingRouter.get('/my', getMyBookings);
+bookingRouter.post('/pay/:bookingId', processPayment); // Optional fallback
 
 export default bookingRouter;
