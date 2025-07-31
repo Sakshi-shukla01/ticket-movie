@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import BlurCircle from '../components/BlurCircle';
 import Loading from '../components/Loading';
 import { dateFormat } from '../lib/dateFormat';
@@ -17,7 +18,6 @@ const MyBookings = () => {
     image_base_url,
   } = useAppContext();
 
-  // ✅ Get bookings from correct endpoint
   const getMyBookings = async () => {
     try {
       const token = await getToken();
@@ -32,26 +32,6 @@ const MyBookings = () => {
       console.error('❌ Error fetching bookings:', error.message);
     }
     setIsLoading(false);
-  };
-
-  // ✅ Fix: use POST /api/booking/pay/:bookingId
-  const handlePayment = async (bookingId) => {
-    try {
-      const token = await getToken();
-      const { data } = await axios.post(`/api/booking/pay/${bookingId}`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (data.success) {
-        alert('✅ Payment successful!');
-        getMyBookings(); // Refresh list
-      } else {
-        alert(data.message || '❌ Payment failed');
-      }
-    } catch (error) {
-      console.error('❌ Error while paying:', error.message);
-      alert('Something went wrong.');
-    }
   };
 
   useEffect(() => {
@@ -86,7 +66,6 @@ const MyBookings = () => {
                 alt={item.show.movie.title}
                 className='md:w-40 w-full aspect-video object-cover object-bottom rounded-md'
               />
-
               <div className='flex flex-col justify-between text-white'>
                 <p className='text-xl font-semibold'>{item.show.movie.title}</p>
                 <p className='text-sm text-gray-400'>{timeFormat(item.show.movie.runtime)} mins</p>
@@ -95,20 +74,21 @@ const MyBookings = () => {
             </div>
 
             {/* Booking Info */}
-            <div className='flex flex-col justify-between items-start md:items-end mt-4 md:mt-0 text-white'>
-              <div>
-                <p className='text-xl font-bold mb-2'>{currency}{item.amount}</p>
-                {!item.isPaid && (
-                  <button
-                    onClick={() => handlePayment(item._id)}
-                    className='bg-red-600 hover:bg-red-700 text-sm px-4 py-2 rounded-full mb-2 font-medium'>
+            <div className='flex flex-col md:items-end md:text-right justify-between p-4 text-white'>
+              <div className='flex items-center gap-4'>
+                <p className='text-2xl font-semibold mb-3'>{currency}{item.amount}</p>
+                {!item.isPaid && item.paymentLink && (
+                  <Link
+                    to={item.paymentLink}
+                    className='bg-primary px-4 py-1.5 mb-3 text-sm rounded-full font-medium cursor-pointer'
+                  >
                     Pay Now
-                  </button>
+                  </Link>
                 )}
               </div>
-              <div className='text-sm text-gray-300'>
+              <div className='text-sm'>
                 <p><span className='text-gray-400'>Total Tickets:</span> {item.bookedSeats.length}</p>
-                <p><span className='text-gray-400'>Seat Numbers:</span> {item.bookedSeats.join(', ')}</p>
+                <p><span className='text-gray-400'>Seat Number:</span> {item.bookedSeats.join(", ")}</p>
               </div>
             </div>
           </div>

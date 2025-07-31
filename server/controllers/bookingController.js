@@ -1,6 +1,7 @@
 import Show from "../models/Show.js";
 import Booking from "../models/Booking.js";
 import stripePackage from 'stripe';
+import { inngest } from "../inngest/index.js";
 
 const stripe = new stripePackage(process.env.STRIPE_SECRET_KEY);
 
@@ -166,7 +167,13 @@ const processPayment = async (req, res) => {
 
     booking.isPaid = true;
     await booking.save();
-
+    //run ingest schedular fucntion to check payment
+await inngest.send({
+  name:"app/chrckpayment",
+  data:{
+    bookingId:booking._id.toString()
+  }
+})
     res.json({ success: true, message: "Payment successful" });
   } catch (err) {
     console.error("Payment error:", err);
