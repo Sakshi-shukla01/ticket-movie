@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
-    "server": "nodemon server.js"
+    "server": "nodemon server.js",
+    "inngest:dev": "inngest dev"
   },
   "dependencies": {
     "@clerk/clerk-sdk-node": "^4.13.23",

@@ -4,10 +4,19 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index.js",
+    "inngest:dev": "inngest dev"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs"
+  "type": "commonjs",
+  "devDependencies": {
+    "inngest": "^3.40.1",
+    "inngest-cli": "^1.11.2"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.1"
+  }
 }
