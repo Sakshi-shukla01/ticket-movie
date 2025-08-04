@@ -27,7 +27,7 @@ app.use(express.json());
 // ✅ CORS middleware (multiple allowed origins)
 const allowedOrigins = [
   'http://localhost:5173',
-  'https://ticket-movie-isoc.vercel.app', // ✅ your deployed frontend
+  'https://ticket-movie-mfoq.vercel.app'// ✅ your deployed frontend
 ];
 
 app.use(cors({
