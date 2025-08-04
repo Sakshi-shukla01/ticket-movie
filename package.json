@@ -17,6 +17,7 @@
     "inngest-cli": "^1.11.2"
   },
   "dependencies": {
-    "dotenv": "^17.2.1"
+    "dotenv": "^17.2.1",
+    "node-fetch": "^3.3.2"
   }
 }
