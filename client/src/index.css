@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap');
 
 @import "tailwindcss";
+
 :root {
   --color-primary: #F84565;
   --color-primary-dull: #D63854;
@@ -16,13 +17,17 @@ body {
   background-color: #090909;
   color: white;
 }
+
 .no-scrollbar{
   scrollbar-width:none;
 }
+
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button{
   -webkit-appearance: none;
 }
-::-webkit-calender-picker-indicator{
+
+/* ✅ typo fixed here */
+::-webkit-calendar-picker-indicator{
   filter: invert(1);
 }

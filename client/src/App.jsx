@@ -1,38 +1,44 @@
-import React from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
+import React from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 import { useAppContext } from "./context/AppContext";
-import { SignIn, useUser } from '@clerk/clerk-react';
+import { SignIn } from "@clerk/clerk-react";
 
 // Components
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
-import TrailersSection from './components/TrailersSection';
-import Loading from './components/Loading'; // ✅ Fixed path here
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+import TrailersSection from "./components/TrailersSection";
+import Loading from "./components/Loading";
 
 // Pages
-import Home from './pages/Home';
-import Movies from './pages/Movies';
-import MovieDetails from './pages/MovieDetails';
-import MyBookings from './pages/MyBookings';
-import Favorite from './pages/Favorite';
-import SeatLayout from './pages/SeatLayout';
+import Home from "./pages/Home";
+import Movies from "./pages/Movies";
+import MovieDetails from "./pages/MovieDetails";
+import MyBookings from "./pages/MyBookings";
+import Favorite from "./pages/Favorite";
+import SeatLayout from "./pages/SeatLayout";
 
 // Admin Pages
-import Layout from './pages/admin/Layout';
-import Dashboard from './pages/admin/Dashboard';
-import AddShows from './pages/admin/AddShows';
-import ListShows from './pages/admin/ListShows';
-import ListBookings from './pages/admin/ListBookings';
+import Layout from "./pages/admin/Layout";
+import Dashboard from "./pages/admin/Dashboard";
+import AddShows from "./pages/admin/AddShows";
+import ListShows from "./pages/admin/ListShows";
+import ListBookings from "./pages/admin/ListBookings";
 
 const App = () => {
   const location = useLocation();
-  const isAdminRoute = location.pathname.startsWith('/admin');
-  const { user } = useAppContext();
-  const { isLoaded } = useUser();
+  const isAdminRoute = location.pathname.startsWith("/admin");
 
+  // ✅ Take isLoaded + adminLoading from context now
+  const { user, isLoaded, isAdmin, adminLoading } = useAppContext();
+
+  // ✅ show loader for admin routes until clerk loads
   if (isAdminRoute && !isLoaded) {
-    return <div className="min-h-screen flex justify-center items-center">Loading...</div>;
+    return (
+      <div className="min-h-screen flex justify-center items-center text-white">
+        Loading...
+      </div>
+    );
   }
 
   return (
@@ -50,19 +56,30 @@ const App = () => {
         <Route path="/favorite" element={<Favorite />} />
         <Route path="/trailers" element={<TrailersSection />} />
 
-        {/* ✅ Stripe Redirect Page */}
+        {/* Stripe Redirect Page */}
         <Route path="/loading/:nextUrl" element={<Loading />} />
 
-        {/* Admin Protected Routes */}
-        <Route path="/admin" element={
-          user ? (
-            <Layout />
-          ) : (
-            <div className="min-h-screen flex justify-center items-center">
-              <SignIn fallbackRedirectUrl={"/admin"} />
-            </div>
-          )
-        }>
+        {/* ✅ Admin Protected Routes */}
+        <Route
+          path="/admin"
+          element={
+            !user ? (
+              <div className="min-h-screen flex justify-center items-center">
+                <SignIn fallbackRedirectUrl={"/admin"} />
+              </div>
+            ) : adminLoading ? (
+              <div className="min-h-screen flex justify-center items-center text-white">
+                Checking admin...
+              </div>
+            ) : isAdmin ? (
+              <Layout />
+            ) : (
+              <div className="min-h-screen flex justify-center items-center text-white">
+                Not authorized
+              </div>
+            )
+          }
+        >
           <Route index element={<Dashboard />} />
           <Route path="add-shows" element={<AddShows />} />
           <Route path="list-shows" element={<ListShows />} />

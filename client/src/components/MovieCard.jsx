@@ -7,29 +7,28 @@ import toast from 'react-hot-toast';
 
 const MovieCard = ({ movie }) => {
   const navigate = useNavigate();
-  const {
-    image_base_url,
-    favoriteMovies,
-    updateFavoriteMovies, // ✅ use context version
-  } = useAppContext();
+  const { image_base_url, favoriteMovies, updateFavoriteMovies } = useAppContext();
 
   if (!movie) return null;
 
-  const movieId = movie._id || movie.id;
+  // ✅ FIX: works whether `movie` is a Show (movie.movie._id) or Movie (movie._id / movie.id)
+  const movieId = movie?.movie?._id || movie?._id || movie?.id;
   if (!movieId) return null;
 
-  const imageUrl =
-    image_base_url + (movie.backdrop_path || movie.poster_path || '');
+  // ✅ FIX: support show.movie fields too
+  const actualMovie = movie.movie ? movie.movie : movie;
 
-  // ✅ Check if movie is already in favorites
-  const isFavorite = favoriteMovies.some(
-    (fav) => fav._id === movieId || fav.id === movieId
-  );
+  const imageUrl =
+    image_base_url + (actualMovie.backdrop_path || actualMovie.poster_path || '');
+
+ const isFavorite = favoriteMovies.some(
+  (fav) => String(fav._id) === String(movieId)
+);
 
   const toggleFavorite = async (e) => {
-    e.stopPropagation(); // prevent click bubbling
+    e.stopPropagation();
     try {
-      await updateFavoriteMovies(movieId); // 🔁 uses AppContext
+      await updateFavoriteMovies(movieId);
     } catch (error) {
       console.error('❌ Favorite toggle failed', error);
       toast.error('Failed to update favorites');
@@ -37,11 +36,7 @@ const MovieCard = ({ movie }) => {
   };
 
   return (
-    <div
-      className="relative flex flex-col justify-between p-3 bg-gray-800 rounded-2xl
-      hover:-translate-y-1 transition duration-300 w-66"
-    >
-      {/* ❤️ Heart icon */}
+    <div className="relative flex flex-col justify-between p-3 bg-gray-800 rounded-2xl hover:-translate-y-1 transition duration-300 w-66">
       <Heart
         onClick={toggleFavorite}
         className={`absolute top-3 right-3 w-5 h-5 cursor-pointer z-10 transition duration-200 ${
@@ -55,20 +50,20 @@ const MovieCard = ({ movie }) => {
           scrollTo(0, 0);
         }}
         src={imageUrl}
-        alt={movie.title || 'Movie Poster'}
+        alt={actualMovie.title || 'Movie Poster'}
         className="rounded-lg h-52 w-full object-cover object-right-bottom cursor-pointer"
       />
 
-      <p className="font-semibold mt-2 truncate">{movie.title}</p>
+      <p className="font-semibold mt-2 truncate">{actualMovie.title}</p>
 
       <p className="text-sm text-gray-400 mt-2">
-        {movie.release_date
-          ? new Date(movie.release_date).getFullYear()
+        {actualMovie.release_date
+          ? new Date(actualMovie.release_date).getFullYear()
           : 'N/A'}{' '}
         ●{' '}
-        {movie.genres?.slice(0, 2).map((genre) => genre.name).join(' | ') ||
+        {actualMovie.genres?.slice(0, 2).map((genre) => genre.name).join(' | ') ||
           'N/A'}{' '}
-        ● {movie.runtime ? timeFormat(movie.runtime) : 'N/A'}
+        ● {actualMovie.runtime ? timeFormat(actualMovie.runtime) : 'N/A'}
       </p>
 
       <div className="flex items-center justify-between mt-4 pb-3">
@@ -77,15 +72,14 @@ const MovieCard = ({ movie }) => {
             navigate(`/movies/${movieId}`);
             scrollTo(0, 0);
           }}
-          className="px-4 py-2 text-xs bg-red-600 hover:bg-red-700
-            transition rounded-full font-medium cursor-pointer"
+          className="px-4 py-2 text-xs bg-red-600 hover:bg-red-700 transition rounded-full font-medium cursor-pointer"
         >
           Buy Tickets
         </button>
 
         <p className="flex items-center gap-1">
           <StarIcon className="w-4 h-4 text-red-600 fill-red-600" />
-          {movie.vote_average?.toFixed(1) || 'N/A'}
+          {actualMovie.vote_average?.toFixed(1) || 'N/A'}
         </p>
       </div>
     </div>

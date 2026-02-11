@@ -22,7 +22,7 @@ root.render(
       <BrowserRouter>
         <AppProvider>
           <App />
-          <Toaster position="top-center" reverseOrder={false} /> {/* ✅ Enables toast messages */}
+          {/* <Toaster position="top-center" reverseOrder={false} /> ✅ Enables toast messages */}
         </AppProvider>
       </BrowserRouter>
     </ClerkProvider>

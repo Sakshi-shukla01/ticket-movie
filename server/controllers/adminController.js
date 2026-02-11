@@ -3,28 +3,36 @@ import Show from "../models/Show.js";
 import { clerkClient } from "@clerk/express";
 
 // ✅ Check if the user is admin
+// controllers/adminController.js
+import User from "../models/User.js";
+
 export const isAdmin = async (req, res) => {
   try {
-    const { userId } = req.auth(); // Ensure Clerk auth is applied
-    const user = await clerkClient.users.getUser(userId);
+    const userId = req.auth?.userId; // from Clerk middleware
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
 
-    const isAdmin = user.privateMetadata?.role === "admin";
+    const user = await User.findById(userId);
+    const ok = user?.role === "admin";
 
-    res.json({ success: true, isAdmin });
-  } catch (error) {
-    console.error("Error checking admin status:", error);
-    res.status(500).json({ success: false, message: "Failed to verify admin" });
+    return res.json({ success: true, isAdmin: ok });
+  } catch (err) {
+    console.error("isAdmin error:", err.message);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
+
+// ✅ Get dashboard summary for admin
 // ✅ Get dashboard summary for admin
 export const getDashboardData = async (req, res) => {
   try {
     const bookings = await Booking.find({ isPaid: true });
     const activeShows = await Show.find({ showDateTime: { $gte: new Date() } }).populate("movie");
 
-    // 🔁 Replace User.countDocuments() since you're using Clerk for users
-    const allUsers = await clerkClient.users.getUserList({ limit: 100 }); // Note: paginated
+    // ✅ FIX HERE
+    const { data: allUsers } = await clerkClient.users.getUserList({ limit: 100 });
     const totalUser = allUsers.length;
 
     const dashboardData = {

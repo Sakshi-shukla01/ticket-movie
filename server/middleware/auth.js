@@ -1,16 +1,19 @@
-import { clerkClient } from "@clerk/express";
+// middleware/auth.js
+import User from "../models/User.js";
 
 export const protectAdmin = async (req, res, next) => {
   try {
-    const { userId } = req.auth(); // ✅ Correct usage: no `await`
+    // ✅ Clerk auth middleware puts this on req
+    const userId = req.auth?.userId;
 
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
-    const user = await clerkClient.users.getUser(userId);
+    // ✅ Your schema stores Clerk userId as _id
+    const user = await User.findById(userId);
 
-    if (!user || user.privateMetadata.role !== "admin") {
+    if (!user || user.role !== "admin") {
       return res.status(403).json({ success: false, message: "Not authorized" });
     }
 

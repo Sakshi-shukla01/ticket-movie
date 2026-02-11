@@ -9,7 +9,7 @@ import { requireAuth } from "@clerk/express";
 const userRouter = express.Router();
 
 // ✅ Protect all user routes
-userRouter.use(requireAuth);
+userRouter.use(requireAuth());
 
 userRouter.get("/bookings", getUserBookings);
 userRouter.get("/favorites", getFavorites);
