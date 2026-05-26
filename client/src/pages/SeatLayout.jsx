@@ -7,7 +7,9 @@ import { assets } from '../assets/assets';
 import BlurCircle from '../components/BlurCircle';
 import { toast } from 'react-hot-toast';
 import { useAppContext } from '../context/AppContext';
+import { io } from 'socket.io-client';
 
+const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:3000');
 const SeatLayout = () => {
   const groupRows = [["A", "B"], ["C", "D"], ["E", "F"], ["G", "H"], ["I", "J"]];
   const { id, date } = useParams();
@@ -190,12 +192,28 @@ const SeatLayout = () => {
     }
   }, [id]);
 
-  useEffect(() => {
-    if (selectedTime) {
-      setSelectedSeats([]);
-      getOccupiedSeats();
-    }
-  }, [selectedTime]);
+ useEffect(() => {
+  if (selectedTime) {
+    setSelectedSeats([]);
+    getOccupiedSeats();
+  }
+}, [selectedTime]);
+
+// ✅ WebSocket — real time seat updates
+useEffect(() => {
+  if (!selectedTime?.showId) return;
+
+  socket.emit('join-show', selectedTime.showId);
+
+  socket.on('seats-booked', ({ bookedSeats }) => {
+    setOccupiedSeats(prev => [...new Set([...prev, ...bookedSeats])]);
+    setSelectedSeats(prev => prev.filter(seat => !bookedSeats.includes(seat)));
+  });
+
+  return () => {
+    socket.off('seats-booked');
+  };
+}, [selectedTime]);
 
   // Debug render
   if (loading) {

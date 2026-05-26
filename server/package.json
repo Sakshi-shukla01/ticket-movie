@@ -5,6 +5,8 @@
   "main": "server.js",
   "scripts": {
     "dev": "nodemon server.js",
+    "worker": "node workers/bookingWorker.js",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js", 
     "start": "node server.js",
     "server": "nodemon server.js",
     "inngest:dev": "inngest dev"
@@ -12,16 +14,31 @@
   "dependencies": {
     "@clerk/clerk-sdk-node": "^4.13.23",
     "@clerk/express": "^1.7.11",
+    "amqplib": "^2.0.1",
     "axios": "^1.11.0",
-    "cors": "^2.8.5",
+    "cors": "^2.8.6",
     "dotenv": "^17.2.1",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.3.2",
     "inngest": "^3.40.1",
+    "ioredis": "^5.10.1",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.16.4",
+    "mongoose": "^8.23.0",
     "nodemailer": "^7.0.5",
+    "prom-client": "^15.1.3",
+    "redis": "^5.11.0",
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.3",
     "stripe": "^18.4.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.11"
-  }
+  },
+"jest": {
+  "testEnvironment": "node",
+  "testMatch": ["**/tests/**/*.test.js"],
+  "transform": {},
+  "setupFiles": ["./tests/setup.js"]
 }
+}
+

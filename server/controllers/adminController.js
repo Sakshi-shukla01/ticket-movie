@@ -1,14 +1,28 @@
 import Booking from "../models/Booking.js";
 import Show from "../models/Show.js";
 import { clerkClient } from "@clerk/express";
+import User from "../models/User.js";
+import redis from "../configs/redis.js";
+
+const CLERK_USERS_TTL = 5 * 60; // 5 minutes
+const CLERK_USERS_KEY = "clerk:users:all";
+
+// ─── Helper: get Clerk users with Redis cache ───────────────────────
+const getCachedClerkUsers = async () => {
+  const cached = await redis.get(CLERK_USERS_KEY);
+  if (cached) {
+    return JSON.parse(cached);
+  }
+
+  const { data: clerkUsers } = await clerkClient.users.getUserList({ limit: 100 });
+  await redis.setex(CLERK_USERS_KEY, CLERK_USERS_TTL, JSON.stringify(clerkUsers));
+  return clerkUsers;
+};
 
 // ✅ Check if the user is admin
-// controllers/adminController.js
-import User from "../models/User.js";
-
 export const isAdmin = async (req, res) => {
   try {
-    const userId = req.auth?.userId; // from Clerk middleware
+    const userId = req.auth?.userId;
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
@@ -23,16 +37,14 @@ export const isAdmin = async (req, res) => {
   }
 };
 
-
-// ✅ Get dashboard summary for admin
 // ✅ Get dashboard summary for admin
 export const getDashboardData = async (req, res) => {
   try {
     const bookings = await Booking.find({ isPaid: true });
     const activeShows = await Show.find({ showDateTime: { $gte: new Date() } }).populate("movie");
 
-    // ✅ FIX HERE
-    const { data: allUsers } = await clerkClient.users.getUserList({ limit: 100 });
+    // ✅ Cached Clerk call — won't hit rate limit
+    const allUsers = await getCachedClerkUsers();
     const totalUser = allUsers.length;
 
     const dashboardData = {
@@ -70,10 +82,9 @@ export const getAllBookings = async (req, res) => {
       .populate("show")
       .sort({ createdAt: -1 });
 
-    // 🔥 FIX: Fetch all users (Clerk returns a paginated object)
-    const { data: clerkUsers } = await clerkClient.users.getUserList({ limit: 100 });
+    // ✅ Cached Clerk call — won't hit rate limit
+    const clerkUsers = await getCachedClerkUsers();
 
-    // 🔁 Add name/email from Clerk to each booking
     const enrichedBookings = bookings.map((booking) => {
       const user = clerkUsers.find((u) => u.id === booking.user.toString());
       return {

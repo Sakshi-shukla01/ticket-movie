@@ -1,19 +1,29 @@
 // middleware/auth.js
 import User from "../models/User.js";
+import redis from "../configs/redis.js";
 
 export const protectAdmin = async (req, res, next) => {
   try {
-    // ✅ Clerk auth middleware puts this on req
     const userId = req.auth?.userId;
 
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
-    // ✅ Your schema stores Clerk userId as _id
-    const user = await User.findById(userId);
+    // Check Redis first — skip DB hit on every admin request
+    const cacheKey = `user:role:${userId}`;
+    let role = await redis.get(cacheKey);
 
-    if (!user || user.role !== "admin") {
+    if (!role) {
+      // Cache miss — query MongoDB exactly as before
+      const user = await User.findById(userId);
+      role = user?.role;
+
+      // Cache the role for 5 min
+      if (role) await redis.setex(cacheKey, 300, role);
+    }
+
+    if (!role || role !== "admin") {
       return res.status(403).json({ success: false, message: "Not authorized" });
     }
 
