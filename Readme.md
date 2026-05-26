@@ -2,7 +2,7 @@
 
 A full-stack SaaS movie ticket booking application with real-time seat selection, payment processing, and AI-powered background workflows.
 
-**Live Demo:** https://ticket-movie-mfoq.vercel.app
+
 
 ---
 
@@ -212,6 +212,15 @@ channel.consume('booking_confirmed', (msg) => {
 | Seat lock | `lock:seat:{showId}:{seat}` | 10 sec |
 
 ---
+---
+##screenshots
+<img width="1509" height="775" alt="Screenshot 2026-05-26 144416" src="https://github.com/user-attachments/assets/017b9421-0015-4b1b-bcc6-de921a70ba14" />
+<img width="1463" height="283" alt="Screenshot 2026-05-26 144327" src="https://github.com/user-attachments/assets/80581d3d-7e0d-4dd7-ac66-e33666022a00" />
+<img width="1497" height="278" alt="Screenshot 2026-05-26 144032" src="https://github.com/user-attachments/assets/070910e6-2c01-4f30-893d-d74a2cd38aa2" />
+<img width="1366" height="352" alt="Screenshot 2026-05-26 143916" src="https://github.com/user-attachments/assets/ac693d4a-a29c-4cc9-93ba-8a901eafda34" />
+<img width="1500" height="187" alt="Screenshot 2026-05-26 143734" src="https://github.com/user-attachments/assets/91908f3e-8ce7-4a95-8a38-be87ee0d39bb" />
+<img width="1191" height="307" alt="Screenshot 2026-05-26 143721" src="https://github.com/user-attachments/assets/63773402-b41f-4bc0-a423-e13a07d2eb6a" />
+
 
 
 ## 🙋 Author
